@@ -1,9 +1,22 @@
 import React, {useState, useEffect} from 'react'
+import createDeckState from './functions/create-deck-state'
 
 const Card = (props) => {
+  let cardColor = 'black'
+  if (props.suite === 'h' || props.suite === 'd') {
+    cardColor = 'red'
+  }
   return (
-    <div className={props.suite}>
-      {props.value}
+    <div
+      className={props.suite}
+      style={{
+        color: cardColor,
+        border: 'solid black 2px',
+        padding: '5px'
+      }}
+    >
+      <p>{props.value}</p>
+      <p>{props.suite}</p>
     </div>
   )
 }
@@ -13,64 +26,8 @@ const randomNumberBetween = (min, max) => {
 }
 
 const App = () => {
-  const numberOfDecks = 1
-  const initialDeckState = (numberOfDecks) => {
-    const cards = []
-    for (let i = 1; i <= numberOfDecks; i++) {
-      const deckNumber = i
-      for (let i = 0; i <= 3; i++) {
-        let suite
-        switch (i) {
-          case 0:
-            suite = 's'
-            break
-          case 1:
-            suite = 'c'
-            break
-          case 2:
-            suite = 'd'
-            break
-          case 3:
-            suite = 'h'
-            break
-        }
-        for (let i = 1; i <= 13; i++) {
-          let value
-          let cardType = 'number'
-          switch (i) {
-            case 1:
-              cardType = 'ace'
-              value = 11
-              break
-            case 11:
-              cardType = 'jack'
-              value = 10
-              break
-            case 12:
-              cardType = 'queen'
-              value = 10
-              break
-            case 13:
-              cardType = 'king'
-              value = 10
-              break
-            default:
-              value = i
-          }
-          const card = {
-            suite: suite,
-            value: value,
-            cardType: cardType,
-            id: `${suite}${i}d-${deckNumber}`
-          }
-          cards.push(card)
-        }
-      }
-    }
-    return cards
-  }
-  const initialDeck = initialDeckState(numberOfDecks)
-
+  const [numberOfDecks, setNumberOfDecks] = useState(1)
+  const initialDeck = createDeckState(numberOfDecks)
   const [deckState, setDeckState] = useState(initialDeck)
   const [playerCardsState, setPlayerCardsState] = useState([])
 
@@ -87,27 +44,57 @@ const App = () => {
 
     return (
       <div>
-        {playerCards}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between'
+        }}
+        >
+          {playerCards}
+        </div>
       </div>
     )
   }
 
   const playerHit = () => {
+    if (deckState.length === 0) {
+      const newDeck = createDeckState(numberOfDecks)
+      const cardIndex = randomNumberBetween(0, newDeck.length - 1)
+      const newPlayerCards = playerCardsState.concat(newDeck[cardIndex])
+      const newDeckCards = newDeck.filter((card) => {
+        let cardNotOnTable = true
+        if (card.id === newDeck[cardIndex].id) {
+          cardNotOnTable = false
+          return cardNotOnTable
+        }
+        for (let playerCard of playerCardsState) {
+          if (playerCard.id === card.id) {
+            cardNotOnTable = false
+          }
+        }
+        return cardNotOnTable
+      })
+      if (newDeckCards.length === 0) {
+        alert('out of cards')
+        return
+      }
+      setDeckState(newDeckCards)
+      setPlayerCardsState(newPlayerCards)
+      alert('shuffled')
+      return
+    }
+
     const cardIndex = randomNumberBetween(0, deckState.length - 1)
     const newPlayerCards = playerCardsState.concat(deckState[cardIndex])
-    const newDeckCards = deckState.filter((card)=>{
+    const newDeckCards = deckState.filter((card) => {
       return card.id !== deckState[cardIndex].id
     })
     setDeckState(newDeckCards)
     setPlayerCardsState(newPlayerCards)
-    console.log(deckState.length)
   }
 
   return <div className="App">
     <PlayerCards/>
-    <button onClick={() => {
-      playerHit()
-    }}>
+    <button onClick={() => playerHit()}>
       Hit
     </button>
   </div>
