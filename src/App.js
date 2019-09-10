@@ -34,26 +34,15 @@ const App = () => {
   const [playerTotal, setPlayerTotal] = useState(0)
 
   const PlayerTotal = () => {
-    if (playerCardsState.length === 0){
+    if (playerCardsState.length === 0) {
       return <div>0</div>
     }
-    const playerTotal = playerCardsState.reduce((total, card) => {
-      return (
-        total + card.value
-      )
-    },0)
 
-    console.log(playerHasSoftAce)
-    if (playerHasSoftAce && playerTotal < 21){
-      setPlayerTotal(playerTotal)
+    if (playerHasSoftAce && playerTotal < 21) {
       return <div>{playerTotal} or {playerTotal - 10}</div>
-    } else if(playerHasSoftAce){
-      setPlayerTotal(playerTotal - 10)
-      setPlayerHasSoftAce(false)
+    } else if (playerHasSoftAce) {
       return <div>{playerTotal - 10}</div>
-    }
-    else{
-      setPlayerTotal(playerTotal)
+    } else {
       return <div>{playerTotal}</div>
     }
   }
@@ -114,20 +103,40 @@ const App = () => {
     const cardIndex = randomNumberBetween(0, deckState.length - 1)
     const newCard = deckState[cardIndex]
 
-    if (newCard.cardType === 'ace' && playerTotal + newCard.value > 21){//If you can't add 11 to total then ace must be 1
+    if (newCard.cardType === 'ace' && playerTotal + newCard.value > 21) {//If you can't add 11 to total then ace must be 1
       newCard.value = 1
     }
-    if(newCard.value === 11){
+    if (newCard.value === 11) {
       setPlayerHasSoftAce(true)
     }
-    const newPlayerCards = playerCardsState.concat(newCard)
+    if (playerHasSoftAce && playerTotal + newCard.value > 21) {
+      const newPlayerCards = playerCardsState.map((card) => {
+        if (card.value === 11) {
+          card.value = 1
+        }
+        return card
+      }).concat(newCard)
+      console.log(newPlayerCards)
+      setPlayerCardsState(newPlayerCards)
+      setPlayerHasSoftAce(false)
+    } else {
+      const newPlayerCards = playerCardsState.concat(newCard)
+      setPlayerCardsState(newPlayerCards)
+    }
+
     const newDeckCards = deckState.filter((card) => {
       return card.id !== newCard.id
     })
 
     setDeckState(newDeckCards)
-    setPlayerCardsState(newPlayerCards)
   }
+
+  useEffect(() => {
+    const newTotal = playerCardsState.reduce((total, card) => {
+      return (total + card.value)
+    }, 0)
+    setPlayerTotal(newTotal)
+  }, [playerCardsState])
 
   return <div className="App">
     <PlayerTotal/>
