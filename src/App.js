@@ -32,6 +32,7 @@ const App = () => {
   const [playerCardsState, setPlayerCardsState] = useState([])
   const [playerHasSoftAce, setPlayerHasSoftAce] = useState(false)//This state shows whether the player
   const [playerTotal, setPlayerTotal] = useState(0)
+  const [deckCut, setDeckCut] = useState(randomNumberBetween(5, (numberOfDecks * 52) - 20))
 
   const PlayerTotal = () => {
     if (playerCardsState.length === 0) {
@@ -70,38 +71,31 @@ const App = () => {
       </div>
     )
   }
-
-  const playerHit = () => {
-    if (deckState.length === 0) {
-      const newDeck = createDeckState(numberOfDecks)
-      const cardIndex = randomNumberBetween(0, newDeck.length - 1)
-      const newCard = newDeck[cardIndex]
-      const newPlayerCards = playerCardsState.concat(newCard)
-      const newDeckCards = newDeck.filter((card) => {
-        let cardNotOnTable = true
-        if (card.id === newCard.id) {
-          cardNotOnTable = false
-          return cardNotOnTable
-        }
-        for (let playerCard of playerCardsState) {
-          if (playerCard.id === card.id) {
-            cardNotOnTable = false
-          }
-        }
+  const shuffleDeck = (newCard) => {
+    const newDeck = createDeckState(numberOfDecks)
+    const newDeckCards = newDeck.filter((card) => {
+      let cardNotOnTable = true
+      if (card.id === newCard.id) {
+        cardNotOnTable = false
         return cardNotOnTable
-      })
-      if (newDeckCards.length === 0) {
-        alert('out of cards')
-        return
       }
-      setDeckState(newDeckCards)
-      setPlayerCardsState(newPlayerCards)
-      alert('shuffled')
-      return
-    }
-
+      for (let playerCard of playerCardsState) {
+        if (playerCard.id === card.id) {
+          cardNotOnTable = false
+        }
+      }
+      return cardNotOnTable
+    })
+    setDeckState(newDeckCards)
+    setDeckCut(randomNumberBetween(5, (numberOfDecks * 52) - 20))
+    alert('shuffled')
+  }
+  const playerHit = () => {
     const cardIndex = randomNumberBetween(0, deckState.length - 1)
     const newCard = deckState[cardIndex]
+    if (deckState.length <= deckCut) {
+      shuffleDeck(newCard)
+    }
 
     if (newCard.cardType === 'ace' && playerTotal + newCard.value > 21) {//If you can't add 11 to total then ace must be 1
       newCard.value = 1
@@ -116,7 +110,6 @@ const App = () => {
         }
         return card
       }).concat(newCard)
-      console.log(newPlayerCards)
       setPlayerCardsState(newPlayerCards)
       setPlayerHasSoftAce(false)
     } else {
@@ -138,13 +131,15 @@ const App = () => {
     setPlayerTotal(newTotal)
   }, [playerCardsState])
 
-  return <div className="App">
-    <PlayerTotal/>
-    <PlayerCards/>
-    <button onClick={() => playerHit()}>
-      Hit
-    </button>
-  </div>
+  return (
+    <div className="App">
+      <PlayerTotal/>
+      <PlayerCards/>
+      <button onClick={() => playerHit()}>
+        Hit
+      </button>
+    </div>
+  )
 }
 
 export default App
