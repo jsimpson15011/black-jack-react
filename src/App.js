@@ -33,6 +33,9 @@ const App = () => {
   const [playerHasSoftAce, setPlayerHasSoftAce] = useState(false)//This state shows whether the player
   const [playerTotal, setPlayerTotal] = useState(0)
   const [deckCut, setDeckCut] = useState(randomNumberBetween(5, (numberOfDecks * 52) - 20))
+  const [playerActiveHand, setPlayerActiveHand] = useState(0)
+  const [playerHandIsBusted, setPlayerHandIsBusted] = useState([false])
+  const [playerHasControl, setPlayerHasControl] = useState(true)
 
   const PlayerTotal = () => {
     if (playerCardsState.length === 0) {
@@ -63,7 +66,9 @@ const App = () => {
       <div>
         <div style={{
           display: 'flex',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          height: '300px',
+          background: 'green'
         }}
         >
           {playerCards}
@@ -90,6 +95,12 @@ const App = () => {
     setDeckCut(randomNumberBetween(5, (numberOfDecks * 52) - 20))
     alert('shuffled')
   }
+  const deal = () => {
+    setPlayerHandIsBusted([false])
+    setPlayerHasControl(true)
+    setPlayerCardsState([])
+  }
+
   const playerHit = () => {
     const cardIndex = randomNumberBetween(0, deckState.length - 1)
     const newCard = deckState[cardIndex]
@@ -129,14 +140,32 @@ const App = () => {
       return (total + card.value)
     }, 0)
     setPlayerTotal(newTotal)
+    if(newTotal>21){
+      const newPlayerHandIsBusted = playerHandIsBusted.map((hand, i) => {
+        if(i === playerActiveHand){
+          return true
+        }
+      })
+      setPlayerHandIsBusted(newPlayerHandIsBusted)
+      setPlayerHasControl(false)
+    }
   }, [playerCardsState])
 
   return (
     <div className="App">
       <PlayerTotal/>
       <PlayerCards/>
-      <button onClick={() => playerHit()}>
+      <button
+        onClick={() => { playerHit()}}
+        style={playerHasControl ? {display: 'block'} : {display: 'none'}}
+      >
         Hit
+      </button>
+      <button
+        onClick={() => { deal()}}
+        style={playerHasControl ? {display: 'none'} : {display: 'block'}}
+      >
+        Deal
       </button>
     </div>
   )
