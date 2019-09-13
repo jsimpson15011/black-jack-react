@@ -37,18 +37,25 @@ const App = () => {
   const [playerHandIsBusted, setPlayerHandIsBusted] = useState([false])
   const [playerHasControl, setPlayerHasControl] = useState(true)
 
-  const PlayerTotal = () => {
-    if (playerCardsState.length === 0) {
-      return <div>0</div>
-    }
-
-    if (playerHasSoftAce && playerTotal < 21) {
-      return <div>{playerTotal} or {playerTotal - 10}</div>
-    } else if (playerHasSoftAce) {
-      return <div>{playerTotal - 10}</div>
+  function useHandTotal(cardState, handHasSoftAce){
+    const [handTotal, setHandTotal] = useState(0)
+    useEffect(() => {
+      const newTotal = cardState.reduce((total, card) => {
+        return (total + card.value)
+      }, 0)
+      setHandTotal(newTotal)
+    })
+    if (handHasSoftAce && handTotal < 21) {
+      return <div>{handTotal} or {handTotal - 10}</div>
+    } else if (handHasSoftAce) {
+      return <div>{handTotal - 10}</div>
     } else {
-      return <div>{playerTotal}</div>
+      return <div>{handTotal}</div>
     }
+  }
+
+  const PlayerTotal = () => {
+    return useHandTotal(playerCardsState, playerHasSoftAce)
   }
 
   const PlayerCards = () => {
@@ -166,6 +173,11 @@ const App = () => {
         style={playerHasControl ? {display: 'none'} : {display: 'block'}}
       >
         Deal
+      </button>
+      <button
+        onClick={() => { deal()}}
+      >
+
       </button>
     </div>
   )
