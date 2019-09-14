@@ -36,7 +36,7 @@ const App = () => {
   const [deckCut, setDeckCut] = useState(randomNumberBetween(5, (numberOfDecks * 52) - 20))
   const [playerActiveHand, setPlayerActiveHand] = useState(0)
   const [playerHandIsBusted, setPlayerHandIsBusted] = useState([false])
-  const [playerHasControl, setPlayerHasControl] = useState(true)
+  const [playerHasControl, setPlayerHasControl] = useState(false)
 
   function useHandTotal(cardState, handHasSoftAce){
     const [handTotal, setHandTotal] = useState(0)
@@ -106,19 +106,27 @@ const App = () => {
   const deal = () => {
     setPlayerHandIsBusted([false])
     setPlayerHasControl(true)
-    setPlayerCardsState([])
-  }
+    setPlayerHasSoftAce(false)
 
-  const playerHit = () => {
+    const newPlayerCardState = [drawCard(),drawCard()]
+    setPlayerCardsState(newPlayerCardState)
+  }
+  const drawCard = (handTotal) => {
     const cardIndex = randomNumberBetween(0, deckState.length - 1)
     const newCard = deckState[cardIndex]
     if (deckState.length <= deckCut) {
       shuffleDeck(newCard)
     }
 
-    if (newCard.cardType === 'ace' && playerTotal + newCard.value > 21) {//If you can't add 11 to total then ace must be 1
+    if (newCard.cardType === 'ace' && handTotal + newCard.value > 21) {//If you can't add 11 to total then ace must be 1
       newCard.value = 1
     }
+
+    return newCard
+  }
+
+  const playerHit = () => {
+    const newCard = drawCard()
     if (newCard.value === 11) {
       setPlayerHasSoftAce(true)
     }
@@ -183,11 +191,6 @@ const App = () => {
         style={playerHasControl ? {display: 'none'} : {display: 'block'}}
       >
         Deal
-      </button>
-      <button
-        onClick={() => { deal()}}
-      >
-
       </button>
     </div>
   )
