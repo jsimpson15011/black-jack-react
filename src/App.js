@@ -12,7 +12,8 @@ const Card = (props) => {
       style={{
         color: cardColor,
         border: 'solid black 2px',
-        padding: '5px'
+        padding: '5px',
+        background: 'white'
       }}
     >
       <p>{props.value}</p>
@@ -45,7 +46,7 @@ const App = () => {
       }, 0)
       setHandTotal(newTotal)
     })
-    if (handHasSoftAce && handTotal < 21) {
+    if (handHasSoftAce && handTotal <= 21) {
       return <div>{handTotal} or {handTotal - 10}</div>
     } else if (handHasSoftAce) {
       return <div>{handTotal - 10}</div>
@@ -134,12 +135,6 @@ const App = () => {
       const newPlayerCards = playerCardsState.concat(newCard)
       setPlayerCardsState(newPlayerCards)
     }
-
-    const newDeckCards = deckState.filter((card) => {
-      return card.id !== newCard.id
-    })
-
-    setDeckState(newDeckCards)
   }
 
   useEffect(() => {
@@ -156,7 +151,22 @@ const App = () => {
       setPlayerHandIsBusted(newPlayerHandIsBusted)
       setPlayerHasControl(false)
     }
+
+    const cardsOnTable = playerCardsState
+
+    const newDeckCards = deckState.filter((card) => {
+      let cardIsInDeck = true
+      cardsOnTable.forEach((newCard) => {
+        if (newCard.id === card.id){
+          cardIsInDeck = false
+        }
+      })
+      return cardIsInDeck
+    })
+    setDeckState(newDeckCards)
+
   }, [playerCardsState])
+
 
   return (
     <div className="App">
